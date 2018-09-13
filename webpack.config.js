@@ -10,13 +10,12 @@ const libraryName = pkg.name;
 const PATHS = {
   "src": path.resolve(__dirname, 'src'),
   "dist": path.resolve(__dirname, 'dist'),
-  "test": path.resolve(__dirname, 'test'),
 }
 
 module.exports = {
   entry: [
     path.join(PATHS.src, 'js', 'index.js'),
-    path.join(PATHS.src, 'scss', 'style.scss'),
+    path.join(PATHS.src, 'assets/scss', 'style.scss'),
   ],
   output: {
     filename: 'plugin.js',
@@ -24,7 +23,7 @@ module.exports = {
     umdNamedDefine: true,
     library: libraryName,
   },
-  devtool: "source-map",
+  devtool: isProduction ? false : "source-map",
   module: {
     rules: [{
         test: /\.js$/,
@@ -38,7 +37,7 @@ module.exports = {
       },
       {
         test: /\.(sass|scss)$/,
-        include: path.resolve(__dirname, 'src/scss'),
+        include: path.resolve(PATHS.src, 'assets/scss'),
         use: [
           {
             loader: MiniCssExtractPlugin.loader,
@@ -47,7 +46,7 @@ module.exports = {
           {
             loader: "css-loader",
             options: {
-              sourceMap: true,
+              sourceMap: isProduction ? false : true,
               url: false
             }
           },
@@ -71,26 +70,48 @@ module.exports = {
           {
             loader: "sass-loader",
             options: {
-              sourceMap: true
+              sourceMap: isProduction ? false : true,
             }
           }
         ]
       },
       {
-        test: /\.html$/,
-        include: path.resolve(__dirname, 'src/html/includes'),
-        use: ['raw-loader']
+        test: /\.(jpg|png|gif|svg)$/,
+        loader: 'image-webpack-loader',
+        options: {
+          bypassOnDebug: true,
+          mozjpeg: {
+            progressive: true,
+            quality: 65
+          },
+          // optipng.enabled: false will disable optipng
+          optipng: {
+            enabled: false,
+          },
+          pngquant: {
+            quality: '65-90',
+            speed: 4
+          },
+          gifsicle: {
+            interlaced: false,
+          },
+          // the webp option will enable WEBP
+          webp: {
+            quality: 75
+          }
+        }
       },
     ]
   },
   plugins: [
     new CleanWebpackPlugin(PATHS.dist, {}),
     new MiniCssExtractPlugin({
-      filename: "./css/style.bundle.css"
+      filename: "./assets/css/style.bundle.css"
     }),
     new HtmlWebpackPlugin({
       title: 'Demo page!!!',
-      template: path.join(PATHS.test, 'index.html'),
+      template: path.join(PATHS.src, 'demo.html'),
+      filename: 'demo.html',
       inject: true
     }),
   ],
@@ -100,6 +121,8 @@ module.exports = {
       aggregateTimeout: 300,
       poll: 1000,
     },
+    open: true,
+    openPage: 'demo.html',
   },
   resolve: {
     modules: [path.resolve('./node_modules'), path.resolve('./src')],

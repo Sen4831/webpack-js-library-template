@@ -14,4 +14,3 @@ class FinanceChart {
 
 export default FinanceChart;
 window.FinanceChart = FinanceChart;
-console.log(window);
